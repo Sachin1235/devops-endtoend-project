@@ -1,9 +1,13 @@
 pipeline {
     agent {
         docker {
-            image 'maven:3.9.6-eclipse-temurin-17'
+            image 'docker:27-cli' 
             args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
+    }
+
+    environment {
+        MAVEN_IMAGE = 'maven:3.9.6-eclipse-temurin-17'
     }
 
     stages {
@@ -15,7 +19,13 @@ pipeline {
 
         stage('Maven Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh '''
+                  docker run --rm \
+                  -v "$PWD":/app \
+                  -w /app \
+                  $MAVEN_IMAGE \
+                  mvn clean package -DskipTests
+                '''
             }
         }
 
